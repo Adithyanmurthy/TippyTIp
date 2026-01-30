@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" fill="none">
+  <!-- Receipt Background -->
+  <rect width="400" height="600" fill="#ffffff" rx="8"/>
+  <rect x="20" y="20" width="360" height="560" fill="#f8f9fa" rx="4"/>
+  
+  <!-- Receipt Header -->
+  <rect x="20" y="20" width="360" height="80" fill="#667eea"/>
+  <text x="200" y="50" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold">RESTAURANT RECEIPT</text>
+  <text x="200" y="75" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12">Thank you for dining with us!</text>
+  
+  <!-- Dashed line -->
+  <line x1="40" y1="110" x2="360" y2="110" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <!-- Items -->
+  <text x="40" y="140" fill="#333" font-family="Arial, sans-serif" font-size="14" font-weight="bold">Item</text>
+  <text x="320" y="140" text-anchor="end" fill="#333" font-family="Arial, sans-serif" font-size="14" font-weight="bold">Price</text>
+  
+  <text x="40" y="170" fill="#666" font-family="Arial, sans-serif" font-size="12">Main Course</text>
+  <text x="320" y="170" text-anchor="end" fill="#666" font-family="Arial, sans-serif" font-size="12">$24.99</text>
+  
+  <text x="40" y="200" fill="#666" font-family="Arial, sans-serif" font-size="12">Appetizer</text>
+  <text x="320" y="200" text-anchor="end" fill="#666" font-family="Arial, sans-serif" font-size="12">$12.50</text>
+  
+  <text x="40" y="230" fill="#666" font-family="Arial, sans-serif" font-size="12">Drinks</text>
+  <text x="320" y="230" text-anchor="end" fill="#666" font-family="Arial, sans-serif" font-size="12">$8.75</text>
+  
+  <text x="40" y="260" fill="#666" font-family="Arial, sans-serif" font-size="12">Dessert</text>
+  <text x="320" y="260" text-anchor="end" fill="#666" font-family="Arial, sans-serif" font-size="12">$6.99</text>
+  
+  <!-- Dashed line -->
+  <line x1="40" y1="290" x2="360" y2="290" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <!-- Totals -->
+  <text x="40" y="320" fill="#333" font-family="Arial, sans-serif" font-size="14">Subtotal</text>
+  <text x="320" y="320" text-anchor="end" fill="#333" font-family="Arial, sans-serif" font-size="14">$53.23</text>
+  
+  <text x="40" y="350" fill="#333" font-family="Arial, sans-serif" font-size="14">Tax (8%)</text>
+  <text x="320" y="350" text-anchor="end" fill="#333" font-family="Arial, sans-serif" font-size="14">$4.26</text>
+  
+  <text x="40" y="380" fill="#667eea" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Total</text>
+  <text x="320" y="380" text-anchor="end" fill="#667eea" font-family="Arial, sans-serif" font-size="16" font-weight="bold">$57.49</text>
+  
+  <!-- Tip Section -->
+  <rect x="40" y="410" width="320" height="100" fill="#f0f4ff" rx="4" stroke="#667eea" stroke-width="2"/>
+  <text x="200" y="435" text-anchor="middle" fill="#667eea" font-family="Arial, sans-serif" font-size="14" font-weight="bold">TIP SUGGESTIONS</text>
+  <text x="60" y="460" fill="#666" font-family="Arial, sans-serif" font-size="12">15% tip:</text>
+  <text x="300" y="460" text-anchor="end" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="bold">$8.62</text>
+  <text x="60" y="480" fill="#666" font-family="Arial, sans-serif" font-size="12">18% tip:</text>
+  <text x="300" y="480" text-anchor="end" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="bold">$10.35</text>
+  <text x="60" y="500" fill="#666" font-family="Arial, sans-serif" font-size="12">20% tip:</text>
+  <text x="300" y="500" text-anchor="end" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="bold">$11.50</text>
+  
+  <!-- Footer -->
+  <text x="200" y="550" text-anchor="middle" fill="#999" font-family="Arial, sans-serif" font-size="10">Use our Tip Calculator app for easy calculations!</text>
+  <text x="200" y="570" text-anchor="middle" fill="#999" font-family="Arial, sans-serif" font-size="10">Thank you! Visit us again soon.</text>
+</svg>

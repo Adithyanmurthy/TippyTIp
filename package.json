@@ -1,0 +1,28 @@
+{
+  "name": "premium-tip-calculator",
+  "version": "1.0.0",
+  "description": "Premium Tip Calculator - Calculate tips instantly with split bills, tax calculation, and tip history",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8000",
+    "dev": "npx http-server -p 8000 -o",
+    "deploy": "echo 'Deploy to your hosting provider'"
+  },
+  "keywords": [
+    "tip-calculator",
+    "gratuity",
+    "split-bill",
+    "pwa",
+    "calculator",
+    "restaurant"
+  ],
+  "author": "Tip Calculator App",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/tip-calculator"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}

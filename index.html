@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="TippyTip - The smartest way to calculate tips. Scan receipts, split bills, convert currencies.">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <title>TippyTip - Smart Tip Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+    --primary:#0ea5e9;--primary-hover:#0284c7;--primary-light:#e0f2fe;
+    --secondary:#8b5cf6;--success:#22c55e;--success-light:#dcfce7;
+    --danger:#ef4444;--bg:#fff;--bg-secondary:#f8fafc;--bg-tertiary:#f1f5f9;
+    --surface:#fff;--text:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;
+    --border:#e2e8f0;--shadow:0 4px 6px -1px rgb(0 0 0/.1);
+    --radius:12px;--radius-lg:16px;--radius-xl:24px
+}
+[data-theme="dark"]{
+    --bg:#0f172a;--bg-secondary:#1e293b;--bg-tertiary:#334155;
+    --surface:#1e293b;--text:#f8fafc;--text-secondary:#cbd5e1;
+    --text-muted:#64748b;--border:#334155;--primary-light:rgba(14,165,233,.15);
+    --success-light:rgba(34,197,94,.15)
+}
+html{font-size:16px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.main{flex:1;padding-bottom:80px}
+.container{max-width:480px;margin:0 auto;padding:0 16px}
+.header{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:480px;margin:0 auto;padding:0 16px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-size:20px;font-weight:700;color:var(--text)}
+.icon-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:0;border:0;border-radius:10px;color:var(--text-secondary);cursor:pointer}
+.icon-btn:hover{background:var(--bg-tertiary);color:var(--text)}
+.icon-btn svg{width:20px;height:20px}
+.section{padding:20px 0}
+.section-title{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.card+.card{margin-top:12px}
+.card-body{padding:20px}
+.scanner{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:32px 20px;text-align:center;cursor:pointer;background:var(--bg-secondary);transition:all .2s}
+.scanner:hover{border-color:var(--primary);background:var(--primary-light)}
+.scanner-icon{width:56px;height:56px;margin:0 auto 16px;background:var(--bg);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.scanner-icon svg{width:28px;height:28px;color:var(--primary)}
+.scanner h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.scanner p{font-size:14px;color:var(--text-muted);margin-bottom:20px}
+.scanner-btns{display:flex;gap:12px;justify-content:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;font-family:inherit;font-size:14px;font-weight:600;border:0;border-radius:var(--radius);cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn-secondary{background:var(--bg-tertiary);color:var(--text)}
+.btn-secondary:hover{background:var(--border)}
+.btn-outline{background:0;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{background:var(--bg-tertiary)}
+.btn-block{width:100%}
+.btn svg{width:18px;height:18px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:14px;font-weight:500;color:var(--text-secondary);margin-bottom:8px}
+.input-wrap{position:relative}
+.input-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px;font-weight:600;color:var(--text-muted)}
+.form-input{width:100%;height:56px;padding:0 16px 0 44px;font-family:inherit;font-size:24px;font-weight:600;color:var(--text);background:var(--bg-secondary);border:2px solid var(--border);border-radius:var(--radius);transition:all .2s;-webkit-appearance:none;appearance:none}
+.form-input:focus{outline:0;border-color:var(--primary);background:var(--bg);box-shadow:0 0 0 4px var(--primary-light)}
+.form-input::placeholder{color:var(--text-muted);font-weight:500}
+.form-select{width:100%;height:48px;padding:0 40px 0 16px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);background:var(--bg-secondary);border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.form-select:focus{outline:0;border-color:var(--primary)}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+<div class="header-inner">
+<a href="/" class="logo"><div class="logo-icon">💸</div><span class="logo-text">TippyTip</span></a>
+<button class="icon-btn" id="themeBtn" aria-label="Toggle theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+</div>
+</header>
+<main class="main">
+<div id="calcTab" class="tab active">
+<div class="container">
+<section class="section">
+<div class="card"><div class="card-body">
+<div class="scanner" id="scanZone">
+<div class="scanner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+<h3>Scan your receipt</h3>
+<p>Take a photo or upload an image</p>
+<div class="scanner-btns">
+<button class="btn btn-primary" id="cameraBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>Camera</button>
+<button class="btn btn-secondary" id="uploadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload</button>
+</div>
+</div>
+<input type="file" id="fileInput" accept="image/*" hidden>
+<div id="progressBox" class="progress-box" style="display:none;margin-top:20px">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<p class="progress-text" id="progressText">Analyzing...</p>
+</div>
+<div id="previewBox" style="display:none;margin-top:16px">
+<img id="previewImg" style="width:100%;max-height:200px;object-fit:contain;border-radius:var(--radius);border:1px solid var(--border)">
+<div style="display:flex;gap:8px;margin-top:12px">
+<button class="btn btn-secondary" id="clearPreviewBtn" style="flex:1">Clear</button>
+<button class="btn btn-primary" id="rescanBtn" style="flex:1">Rescan</button>
+</div>
+</div>
+<div id="detectedBox" class="detected" style="display:none"></div>
+</div></div>
+</section>
+<section class="section">
+<h2 class="section-title">Bill Amount</h2>
+<div class="card"><div class="card-body">
+<div class="form-group">
+<label class="form-label">Total bill</label>
+<div class="input-wrap">
+<span class="input-prefix" id="currencySymbol">$</span>
+<input type="number" id="billInput" class="form-input" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+</div>
+</div>
+<div class="form-group" style="margin-bottom:0">
+<label class="form-label">Tax (optional)</label>
+<div class="input-wrap">
+<span class="input-prefix">$</span>
+<input type="number" id="taxInput" class="form-input" placeholder="0.00" step="0.01" min="0" value="0" inputmode="decimal">
+</div>
+</div>
+</div></div>
+</section>
+<section class="section">
+<h2 class="section-title">Tip Percentage</h2>
+<div class="card"><div class="card-body">
+<div class="tip-grid" id="tipGrid">
+<button class="tip-btn" data-tip="10">10%</button>
+<button class="tip-btn" data-tip="15">15%</button>
+<button class="tip-btn active" data-tip="18">18%</button>
+<button class="tip-btn" data-tip="20">20%</button>
+<button class="tip-btn" data-tip="25">25%</button>
+</div>
+<div class="slider-box">
+<div class="slider-header">
+<span class="slider-label">Custom tip</span>
+<span class="slider-value" id="tipDisplay">18%</span>
+</div>
+<div class="slider-track">
+<div class="slider-fill" id="sliderFill" style="width:36%"></div>
+<input type="range" class="slider-input" id="tipSlider" min="0" max="50" value="18">
+<div class="slider-thumb" id="sliderThumb" style="left:36%"></div>
+</div>
+</div>
+</div></div>
+</section>
+<section class="section">
+<h2 class="section-title">Service Quality</h2>
+<div class="card"><div class="card-body">
+<div class="quality-grid">
+<button class="quality-btn" data-tip="10"><span class="quality-emoji">😐</span><span class="quality-label">Poor</span></button>
+<button class="quality-btn" data-tip="15"><span class="quality-emoji">🙂</span><span class="quality-label">Okay</span></button>
+<button class="quality-btn active" data-tip="18"><span class="quality-emoji">😊</span><span class="quality-label">Good</span></button>
+<button class="quality-btn" data-tip="25"><span class="quality-emoji">🤩</span><span class="quality-label">Amazing</span></button>
+</div>
+</div></div>
+</section>
+<section class="section">
+<h2 class="section-title">Split Bill</h2>
+<div class="card"><div class="card-body">
+<div class="split-control">
+<button class="split-btn" id="decPeople">−</button>
+<div class="split-display">
+<div class="split-num" id="peopleNum">1</div>
+<div class="split-label">people</div>
+</div>
+<button class="split-btn" id="incPeople">+</button>
+</div>
+</div></div>
+</section>
+<section class="section">
+<h2 class="section-title">Options</h2>
+<div class="card"><div class="card-body">
+<div class="options-row">
+<button class="option-btn" id="roundUpBtn">⬆️ Round Up</button>
+<button class="option-btn" id="roundDownBtn">⬇️ Round Down</button>
+</div>
+<div class="currency-row">
+<select class="form-select" id="currencySelect">
+<option value="USD">🇺🇸 USD</option>
+<option value="EUR">🇪🇺 EUR</option>
+<option value="GBP">🇬🇧 GBP</option>
+<option value="CAD">🇨🇦 CAD</option>
+<option value="AUD">🇦🇺 AUD</option>
+<option value="JPY">🇯🇵 JPY</option>
+<option value="INR">🇮🇳 INR</option>
+</select>
+<div class="location-badge">📍 <span id="locationText">Detecting...</span></div>
+</div>
+</div></div>
+</section>
+<section class="section">
+<div class="results" id="resultsCard" style="display:none">
+<div class="result-row"><span>Subtotal</span><span id="subtotalRes">$0.00</span></div>
+<div class="result-row"><span>Tax</span><span id="taxRes">$0.00</span></div>
+<div class="result-row"><span>Tip (<span id="tipPctRes">18</span>%)</span><span id="tipRes">$0.00</span></div>
+<div class="result-total">
+<div class="total-label">Total</div>
+<div class="total-amount" id="totalRes">$0.00</div>
+</div>
+<div class="per-person" id="perPersonBox" style="display:none">
+<div class="per-person-label">Each person pays</div>
+<div class="per-person-amount" id="perPersonRes">$0.00</div>
+</div>
+<div class="result-actions">
+<button class="result-btn" id="saveBtn">💾 Save</button>
+<button class="result-btn" id="shareBtn">📤 Share</button>
+<button class="result-btn" id="clearBtn">🔄 Clear</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+
+<!-- Convert Tab -->
+<div id="convertTab" class="tab">
+<div class="container">
+<section class="section">
+<h2 class="section-title">Currency Converter</h2>
+<div class="card"><div class="card-body">
+<div class="form-group">
+<label class="form-label">Amount</label>
+<div class="input-wrap">
+<span class="input-prefix">$</span>
+<input type="number" id="convertAmt" class="form-input" placeholder="100" value="100" step="0.01" inputmode="decimal">
+</div>
+</div>
+<div class="converter-row">
+<select class="form-select" id="fromCurr">
+<option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="GBP">🇬🇧 GBP</option>
+<option value="CAD">🇨🇦 CAD</option><option value="JPY">🇯🇵 JPY</option><option value="INR">🇮🇳 INR</option>
+</select>
+<button class="swap-btn" id="swapBtn">⇄</button>
+<select class="form-select" id="toCurr">
+<option value="EUR">🇪🇺 EUR</option><option value="USD">🇺🇸 USD</option><option value="GBP">🇬🇧 GBP</option>
+<option value="CAD">🇨🇦 CAD</option><option value="JPY">🇯🇵 JPY</option><option value="INR">🇮🇳 INR</option>
+</select>
+</div>
+<div class="convert-result">
+<div class="convert-label">Converted Amount</div>
+<div class="convert-amount" id="convertedAmt">€92.00</div>
+<div class="convert-rate" id="rateDisplay">1 USD = 0.92 EUR</div>
+</div>
+</div></div>
+</section>
+<section class="section">
+<h2 class="section-title">Popular Rates (vs USD)</h2>
+<div class="card"><div class="card-body">
+<div class="rates-grid">
+<div class="rate-item"><div class="rate-val" id="rateEUR">0.92</div><div class="rate-label">EUR</div></div>
+<div class="rate-item"><div class="rate-val" id="rateGBP">0.79</div><div class="rate-label">GBP</div></div>
+<div class="rate-item"><div class="rate-val" id="rateJPY">149</div><div class="rate-label">JPY</div></div>
+<div class="rate-item"><div class="rate-val" id="rateCAD">1.36</div><div class="rate-label">CAD</div></div>
+</div>
+</div></div>
+</section>
+<section class="section">
+<h2 class="section-title">Local Info</h2>
+<div class="card"><div class="card-body">
+<div class="weather-box">
+<div class="weather-icon" id="weatherIcon">🌍</div>
+<div class="weather-loc" id="weatherLoc">Detecting...</div>
+<div class="weather-temp" id="weatherTemp"></div>
+<div class="weather-desc" id="weatherDesc"></div>
+</div>
+<div class="tip-culture">💡 <strong>Tipping:</strong> <span id="tipCultureText">Loading...</span></div>
+</div></div>
+</section>
+<section class="section">
+<h2 class="section-title">Daily Inspiration</h2>
+<div class="card"><div class="card-body">
+<div class="quote-box">
+<p class="quote-text" id="quoteText">"Generosity is giving more than you can."</p>
+<p class="quote-author" id="quoteAuthor">— Khalil Gibran</p>
+</div>
+<button class="btn btn-secondary btn-block" id="newQuoteBtn">🔄 New Quote</button>
+</div></div>
+</section>
+</div>
+</div>
+
+<!-- History Tab -->
+<div id="historyTab" class="tab">
+<div class="container">
+<section class="section">
+<h2 class="section-title">Calculation History</h2>
+<div class="card">
+<div class="history-list" id="historyList">
+<div class="history-empty">
+<div class="history-empty-icon">🕐</div>
+<h3>No calculations yet</h3>
+<p>Your saved calculations will appear here</p>
+</div>
+</div>
+</div>
+</section>
+<section class="section">
+<h2 class="section-title">Spending Insights</h2>
+<div class="card"><div class="card-body">
+<div class="insights-grid">
+<div class="insight"><div class="insight-val" id="totalSpent">$0</div><div class="insight-label">Total Spent</div></div>
+<div class="insight"><div class="insight-val" id="totalTips">$0</div><div class="insight-label">Total Tips</div></div>
+<div class="insight"><div class="insight-val" id="avgTip">0%</div><div class="insight-label">Avg Tip</div></div>
+<div class="insight"><div class="insight-val" id="calcCount">0</div><div class="insight-label">Calculations</div></div>
+</div>
+</div></div>
+<button class="btn btn-outline btn-block" id="clearHistoryBtn" style="margin-top:12px">🗑️ Clear History</button>
+</section>
+</div>
+</div>
+
+<!-- Settings Tab -->
+<div id="settingsTab" class="tab">
+<div class="container">
+<section class="section">
+<div class="card">
+<div class="settings-section">
+<h3 class="settings-title">Appearance</h3>
+<div class="theme-btns">
+<button class="theme-btn active" id="lightBtn">☀️ Light</button>
+<button class="theme-btn" id="darkBtn">🌙 Dark</button>
+</div>
+</div>
+<div class="settings-section">
+<h3 class="settings-title">Defaults</h3>
+<div class="form-group">
+<label class="form-label">Default Tip %</label>
+<input type="number" id="defaultTipInput" class="form-input" value="18" min="0" max="100" style="padding-left:16px;font-size:16px;height:48px">
+</div>
+<button class="btn btn-primary btn-block" id="saveSettingsBtn">Save Settings</button>
+</div>
+<div class="settings-section">
+<div class="app-info">
+<p><strong>TippyTip</strong> v2.0</p>
+<p style="color:var(--text-muted);font-size:14px;margin-top:4px">Smart tip calculator with receipt scanning</p>
+<div class="api-credits">
+<strong>Powered by:</strong><br>
+Tesseract.js • ExchangeRate-API • IP-API • Open-Meteo • Quotable
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+<button class="nav-btn active" data-tab="calc">🧮<span>Calculator</span></button>
+<button class="nav-btn" data-tab="convert">💱<span>Convert</span></button>
+<button class="nav-btn" data-tab="history">📜<span>History</span></button>
+<button class="nav-btn" data-tab="settings">⚙️<span>Settings</span></button>
+</nav>
+</div>
+
+<!-- Camera Modal -->
+<div class="modal" id="cameraModal">
+<div class="modal-content">
+<div class="modal-header"><h3>Scan Receipt</h3><button class="modal-close" id="closeCameraBtn">✕</button></div>
+<div class="modal-body">
+<div class="camera-box"><video id="cameraVideo" autoplay playsinline></video><div class="camera-guide"></div></div>
+<button class="btn btn-primary btn-block" id="captureBtn" style="margin-top:16px">📷 Capture</button>
+</div>
+</div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal" id="shareModal">
+<div class="modal-content">
+<div class="modal-header"><h3>Share Bill</h3><button class="modal-close" id="closeShareBtn">✕</button></div>
+<div class="modal-body" style="text-align:center">
+<canvas id="qrCanvas" style="max-width:200px;margin:0 auto 16px;display:block;border-radius:8px"></canvas>
+<p style="color:var(--text-muted);margin-bottom:16px;font-size:14px">Scan QR code to view details</p>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" id="copyBtn" style="flex:1">📋 Copy</button>
+<button class="btn btn-primary" id="nativeShareBtn" style="flex:1">📤 Share</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<style>
+.tip-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px}
+.tip-btn{height:48px;display:flex;align-items:center;justify-content:center;font-family:inherit;font-size:15px;font-weight:600;color:var(--text);background:var(--bg-secondary);border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s}
+.tip-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.tip-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.slider-box{padding:16px 0}
+.slider-header{display:flex;justify-content:space-between;margin-bottom:16px}
+.slider-label{font-size:14px;color:var(--text-secondary)}
+.slider-value{font-size:28px;font-weight:700;color:var(--primary)}
+.slider-track{position:relative;height:8px;background:var(--bg-tertiary);border-radius:99px}
+.slider-fill{position:absolute;left:0;top:0;height:100%;background:var(--primary);border-radius:99px;transition:width .1s}
+.slider-input{position:absolute;top:50%;left:0;transform:translateY(-50%);width:100%;height:40px;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none}
+.slider-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:24px;height:24px;background:#fff;border:3px solid var(--primary);border-radius:50%;box-shadow:var(--shadow);pointer-events:none}
+.quality-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.quality-btn{padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg-secondary);border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s}
+.quality-btn:hover{border-color:var(--primary)}
+.quality-btn.active{border-color:var(--success);background:var(--success-light)}
+.quality-emoji{font-size:24px}
+.quality-label{font-size:11px;color:var(--text-muted)}
+.split-control{display:flex;align-items:center;justify-content:center;gap:24px}
+.split-btn{width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:var(--text);background:var(--bg-secondary);border:2px solid var(--border);border-radius:var(--radius);cursor:pointer}
+.split-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.split-btn:active{transform:scale(.95)}
+.split-display{text-align:center;min-width:80px}
+.split-num{font-size:40px;font-weight:700;line-height:1}
+.split-label{font-size:14px;color:var(--text-muted)}
+.options-row{display:flex;gap:8px;margin-bottom:16px}
+.option-btn{flex:1;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;font-size:14px;font-weight:500;color:var(--text-secondary);background:var(--bg-secondary);border:2px solid var(--border);border-radius:var(--radius);cursor:pointer}
+.option-btn:hover{border-color:var(--primary)}
+.option-btn.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.currency-row{display:flex;gap:12px;align-items:center}
+.currency-row .form-select{flex:1}
+.location-badge{display:flex;align-items:center;gap:6px;padding:10px 14px;background:var(--bg-tertiary);border-radius:var(--radius);font-size:13px;color:var(--text-secondary);white-space:nowrap}
+.results{background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:var(--radius-xl);padding:24px;color:#fff}
+.result-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.15);font-size:14px}
+.result-row:last-of-type{border-bottom:0}
+.result-total{margin-top:16px;padding-top:16px;border-top:2px solid rgba(255,255,255,.2);text-align:center}
+.total-label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:8px}
+.total-amount{font-size:44px;font-weight:800}
+.per-person{margin-top:16px;padding:14px;background:rgba(255,255,255,.15);border-radius:var(--radius);text-align:center}
+.per-person-label{font-size:13px;opacity:.9;margin-bottom:4px}
+.per-person-amount{font-size:24px;font-weight:700}
+.result-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.result-btn{padding:10px;background:rgba(255,255,255,.15);border:0;border-radius:var(--radius);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.result-btn:hover{background:rgba(255,255,255,.25)}
+.converter-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.converter-row .form-select{flex:1}
+.swap-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-tertiary);border:0;border-radius:var(--radius);font-size:18px;cursor:pointer}
+.swap-btn:hover{background:var(--primary-light);color:var(--primary)}
+.convert-result{padding:20px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:var(--radius);text-align:center;color:#fff}
+.convert-label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:8px}
+.convert-amount{font-size:36px;font-weight:800}
+.convert-rate{font-size:13px;opacity:.8;margin-top:8px}
+.rates-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.rate-item{padding:16px;background:var(--bg-secondary);border-radius:var(--radius);text-align:center}
+.rate-val{font-size:20px;font-weight:700}
+.rate-label{font-size:12px;color:var(--text-muted);margin-top:4px}
+.weather-box{padding:20px;background:var(--bg-secondary);border-radius:var(--radius);text-align:center;margin-bottom:16px}
+.weather-icon{font-size:48px;margin-bottom:8px}
+.weather-loc{font-size:14px;color:var(--text-secondary)}
+.weather-temp{font-size:32px;font-weight:700;margin-top:8px}
+.weather-desc{font-size:14px;color:var(--text-muted)}
+.tip-culture{padding:14px;background:var(--primary-light);border-radius:var(--radius);font-size:14px;color:var(--text-secondary);line-height:1.5}
+.tip-culture strong{color:var(--primary)}
+.quote-box{padding:20px;text-align:center;margin-bottom:16px}
+.quote-text{font-size:16px;font-style:italic;line-height:1.6;margin-bottom:12px}
+.quote-author{font-size:14px;color:var(--text-muted)}
+.history-list{max-height:400px;overflow-y:auto}
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+.history-item:last-child{border-bottom:0}
+.history-date{font-size:12px;color:var(--text-muted)}
+.history-details{font-size:14px;color:var(--text-secondary);margin-top:2px}
+.history-amount{font-size:18px;font-weight:700;color:var(--primary)}
+.history-empty{padding:40px 20px;text-align:center}
+.history-empty-icon{font-size:48px;margin-bottom:12px}
+.history-empty h3{font-size:16px;margin-bottom:4px}
+.history-empty p{font-size:14px;color:var(--text-muted)}
+.insights-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.insight{padding:16px;background:var(--bg-secondary);border-radius:var(--radius);text-align:center}
+.insight-val{font-size:24px;font-weight:700;color:var(--primary)}
+.insight-label{font-size:12px;color:var(--text-muted);margin-top:4px}
+.settings-section{padding:20px;border-bottom:1px solid var(--border)}
+.settings-section:last-child{border-bottom:0}
+.settings-title{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px}
+.theme-btns{display:flex;gap:8px}
+.theme-btn{flex:1;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--bg-secondary);border:2px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.theme-btn:hover{border-color:var(--primary)}
+.theme-btn.active{border-color:var(--primary);background:var(--primary-light)}
+.app-info{text-align:center}
+.api-credits{margin-top:16px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius);font-size:12px;color:var(--text-muted);line-height:1.6}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);padding:8px 16px;padding-bottom:max(8px,env(safe-area-inset-bottom));display:flex;justify-content:space-around;max-width:480px;margin:0 auto;z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;background:0;border:0;border-radius:var(--radius);color:var(--text-muted);font-family:inherit;font-size:10px;cursor:pointer}
+.nav-btn:hover{color:var(--text-secondary)}
+.nav-btn.active{color:var(--primary)}
+.tab{display:none}
+.tab.active{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.modal-content{width:100%;max-width:480px;background:var(--bg);border-radius:var(--radius-xl) var(--radius-xl) 0 0;overflow:hidden}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-header h3{font-size:18px;font-weight:600}
+.modal-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--bg-tertiary);border:0;border-radius:8px;font-size:16px;cursor:pointer}
+.modal-close:hover{background:var(--danger);color:#fff}
+.modal-body{padding:20px}
+.camera-box{position:relative;background:#000;border-radius:var(--radius);overflow:hidden}
+.camera-box video{width:100%;display:block}
+.camera-guide{position:absolute;inset:20%;border:2px dashed rgba(255,255,255,.5);border-radius:8px}
+.toast-container{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.toast.success{border-color:var(--success)}
+.toast.error{border-color:var(--danger)}
+.progress-box{text-align:center}
+.progress-bar{height:6px;background:var(--bg-tertiary);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:var(--primary);transition:width .3s}
+.progress-text{font-size:13px;color:var(--text-muted);margin-top:10px}
+.detected{margin-top:16px;padding:16px;background:var(--success-light);border-radius:var(--radius)}
+.detected-title{font-size:12px;font-weight:600;color:var(--success);text-transform:uppercase;margin-bottom:12px}
+.detected-item{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid var(--border)}
+.detected-item:last-child{border-bottom:0}
+.detected-item.total{font-weight:700;color:var(--success);padding-top:12px;margin-top:8px;border-top:2px solid var(--success);border-bottom:0}
+@media(max-width:380px){
+.tip-grid{gap:6px}
+.tip-btn{height:44px;font-size:14px}
+.quality-grid{gap:6px}
+.quality-btn{padding:10px 6px}
+.quality-emoji{font-size:20px}
+.total-amount{font-size:36px}
+}
+</style>
+
+<script>
+// State
+const state = {
+    bill: 0, tax: 0, tipPct: 18, people: 1, roundMode: null,
+    currency: localStorage.getItem('currency') || 'USD',
+    theme: localStorage.getItem('theme') || 'light',
+    history: JSON.parse(localStorage.getItem('tipHistory') || '[]'),
+    rates: {}, currentImg: null
+};
+const symbols = {USD:'$',EUR:'€',GBP:'£',CAD:'C$',AUD:'A$',JPY:'¥',INR:'₹'};
+const getEl = id => document.getElementById(id);
+const getAll = s => document.querySelectorAll(s);
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme(); initEvents(); loadHistory(); updateInsights();
+    detectLocation(); fetchRates(); fetchQuote();
+});
+
+function initTheme() {
+    if (state.theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        getEl('darkBtn')?.classList.add('active');
+        getEl('lightBtn')?.classList.remove('active');
+    } else {
+        getEl('lightBtn')?.classList.add('active');
+        getEl('darkBtn')?.classList.remove('active');
+    }
+}
+
+function initEvents() {
+    getEl('billInput').addEventListener('input', e => { state.bill = parseFloat(e.target.value) || 0; calc(); });
+    getEl('taxInput').addEventListener('input', e => { state.tax = parseFloat(e.target.value) || 0; calc(); });
+    getEl('tipSlider').addEventListener('input', e => { state.tipPct = parseInt(e.target.value); updateSlider(); updateBtns(); calc(); });
+    
+    getAll('.tip-btn').forEach(b => b.addEventListener('click', () => {
+        state.tipPct = parseInt(b.dataset.tip); getEl('tipSlider').value = state.tipPct; updateSlider(); updateBtns(); calc(); haptic();
+    }));
+    getAll('.quality-btn').forEach(b => b.addEventListener('click', () => {
+        state.tipPct = parseInt(b.dataset.tip); getEl('tipSlider').value = state.tipPct; updateSlider(); updateBtns(); calc(); haptic();
+    }));
+    
+    getEl('incPeople').addEventListener('click', () => adjPeople(1));
+    getEl('decPeople').addEventListener('click', () => adjPeople(-1));
+    getEl('roundUpBtn').addEventListener('click', () => toggleRound('up'));
+    getEl('roundDownBtn').addEventListener('click', () => toggleRound('down'));
+    getEl('currencySelect').addEventListener('change', e => { state.currency = e.target.value; localStorage.setItem('currency', state.currency); updateSymbol(); calc(); });
+    
+    getEl('saveBtn').addEventListener('click', saveCalc);
+    getEl('shareBtn').addEventListener('click', openShare);
+    getEl('clearBtn').addEventListener('click', clearAll);
+
+    getEl('cameraBtn').addEventListener('click', openCamera);
+    getEl('uploadBtn').addEventListener('click', () => getEl('fileInput').click());
+    getEl('scanZone').addEventListener('click', e => { if (!e.target.closest('.btn')) getEl('fileInput').click(); });
+    getEl('fileInput').addEventListener('change', e => { if (e.target.files[0]) processImg(e.target.files[0]); });
+    getEl('clearPreviewBtn')?.addEventListener('click', clearPreview);
+    getEl('rescanBtn')?.addEventListener('click', rescan);
+    
+    getEl('closeCameraBtn').addEventListener('click', closeCamera);
+    getEl('captureBtn').addEventListener('click', capture);
+    getEl('closeShareBtn').addEventListener('click', () => getEl('shareModal').classList.remove('show'));
+    getEl('copyBtn').addEventListener('click', copyBill);
+    getEl('nativeShareBtn').addEventListener('click', shareBill);
+    
+    getAll('.nav-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+    getEl('themeBtn').addEventListener('click', toggleTheme);
+    getEl('lightBtn').addEventListener('click', () => setTheme('light'));
+    getEl('darkBtn').addEventListener('click', () => setTheme('dark'));
+    getEl('saveSettingsBtn').addEventListener('click', saveSettings);
+    getEl('clearHistoryBtn').addEventListener('click', clearHistory);
+    
+    getEl('convertAmt')?.addEventListener('input', convert);
+    getEl('fromCurr')?.addEventListener('change', convert);
+    getEl('toCurr')?.addEventListener('change', convert);
+    getEl('swapBtn')?.addEventListener('click', swapCurr);
+    getEl('newQuoteBtn')?.addEventListener('click', fetchQuote);
+    
+    const zone = getEl('scanZone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--primary)'; });
+    zone.addEventListener('dragleave', () => zone.style.borderColor = '');
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor = ''; const f = e.dataTransfer.files[0]; if (f?.type.startsWith('image/')) processImg(f); });
+    
+    getAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) { m.classList.remove('show'); if (m.id === 'cameraModal') stopCam(); } }));
+}
+
+// Calculation
+function calc() {
+    if (state.bill <= 0) { getEl('resultsCard').style.display = 'none'; return; }
+    let tip = (state.bill + state.tax) * (state.tipPct / 100);
+    let total = state.bill + state.tax + tip;
+    if (state.roundMode === 'up') { total = Math.ceil(total); tip = total - state.bill - state.tax; }
+    if (state.roundMode === 'down') { total = Math.floor(total); tip = total - state.bill - state.tax; }
+    const pp = total / state.people;
+    getEl('subtotalRes').textContent = fmt(state.bill);
+    getEl('taxRes').textContent = fmt(state.tax);
+    getEl('tipRes').textContent = fmt(tip);
+    getEl('tipPctRes').textContent = state.tipPct;
+    getEl('totalRes').textContent = fmt(total);
+    getEl('perPersonRes').textContent = fmt(pp);
+    getEl('perPersonBox').style.display = state.people > 1 ? 'block' : 'none';
+    getEl('resultsCard').style.display = 'block';
+}
+
+function fmt(n) {
+    const s = symbols[state.currency] || '$';
+    const d = state.currency === 'JPY' ? 0 : 2;
+    return s + n.toFixed(d);
+}
+
+// UI
+function updateSlider() {
+    const p = (state.tipPct / 50) * 100;
+    getEl('sliderFill').style.width = p + '%';
+    getEl('sliderThumb').style.left = p + '%';
+    getEl('tipDisplay').textContent = state.tipPct + '%';
+}
+
+function updateBtns() {
+    getAll('.tip-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.tip) === state.tipPct));
+    getAll('.quality-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.tip) === state.tipPct));
+}
+
+function updateSymbol() { getEl('currencySymbol').textContent = symbols[state.currency] || '$'; }
+
+function adjPeople(d) {
+    state.people = Math.max(1, Math.min(50, state.people + d));
+    getEl('peopleNum').textContent = state.people;
+    calc(); haptic();
+}
+
+function toggleRound(m) {
+    if (state.roundMode === m) {
+        state.roundMode = null;
+        getEl('roundUpBtn').classList.remove('active');
+        getEl('roundDownBtn').classList.remove('active');
+    } else {
+        state.roundMode = m;
+        getEl('roundUpBtn').classList.toggle('active', m === 'up');
+        getEl('roundDownBtn').classList.toggle('active', m === 'down');
+    }
+    calc(); haptic();
+}
+
+function switchTab(t) {
+    getAll('.tab').forEach(x => x.classList.remove('active'));
+    getAll('.nav-btn').forEach(x => x.classList.remove('active'));
+    getEl(t + 'Tab').classList.add('active');
+    document.querySelector('[data-tab="' + t + '"]').classList.add('active');
+    haptic();
+}
+
+function toggleTheme() { setTheme(state.theme === 'dark' ? 'light' : 'dark'); }
+
+function setTheme(t) {
+    state.theme = t;
+    localStorage.setItem('theme', t);
+    if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+    getEl('lightBtn')?.classList.toggle('active', t === 'light');
+    getEl('darkBtn')?.classList.toggle('active', t === 'dark');
+}
+
+// OCR
+async function processImg(file) {
+    const reader = new FileReader();
+    reader.onload = e => { state.currentImg = e.target.result; getEl('previewImg').src = e.target.result; getEl('previewBox').style.display = 'block'; };
+    reader.readAsDataURL(file);
+    getEl('progressBox').style.display = 'block';
+    getEl('scanZone').style.display = 'none';
+    try {
+        const r = await Tesseract.recognize(file, 'eng', {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    const p = Math.round(m.progress * 100);
+                    getEl('progressFill').style.width = p + '%';
+                    getEl('progressText').textContent = 'Analyzing... ' + p + '%';
+                }
+            }
+        });
+        parseReceipt(r.data.text);
+        toast('Receipt scanned!', 'success');
+    } catch (e) {
+        toast('Could not read receipt', 'error');
+    } finally {
+        getEl('progressBox').style.display = 'none';
+    }
+}
+
+function parseReceipt(text) {
+    let total = 0, subtotal = 0, tax = 0;
+    const tp = [/total[:\s]*\$?(\d+[.,]\d{2})/i, /amount\s*due[:\s]*\$?(\d+[.,]\d{2})/i];
+    const sp = [/sub\s*total[:\s]*\$?(\d+[.,]\d{2})/i];
+    const xp = [/tax[:\s]*\$?(\d+[.,]\d{2})/i];
+    for (const p of tp) { const m = text.match(p); if (m) { total = parseFloat(m[1].replace(',', '.')); break; } }
+    for (const p of sp) { const m = text.match(p); if (m) { subtotal = parseFloat(m[1].replace(',', '.')); break; } }
+    for (const p of xp) { const m = text.match(p); if (m) { tax = parseFloat(m[1].replace(',', '.')); break; } }
+    if (total === 0) {
+        const all = []; let m; const g = /\$?(\d+[.,]\d{2})/g;
+        while ((m = g.exec(text)) !== null) all.push(parseFloat(m[1].replace(',', '.')));
+        if (all.length) total = Math.max(...all);
+    }
+    if (total > 0) {
+        if (subtotal > 0 && tax > 0) {
+            getEl('billInput').value = subtotal.toFixed(2); getEl('taxInput').value = tax.toFixed(2);
+            state.bill = subtotal; state.tax = tax;
+        } else if (tax > 0 && total > tax) {
+            const s = total - tax;
+            getEl('billInput').value = s.toFixed(2); getEl('taxInput').value = tax.toFixed(2);
+            state.bill = s; state.tax = tax;
+        } else {
+            getEl('billInput').value = total.toFixed(2); state.bill = total;
+        }
+        calc();
+    }
+    showDetected(total, subtotal, tax);
+}
+
+function showDetected(total, subtotal, tax) {
+    const box = getEl('detectedBox');
+    if (total === 0) { box.style.display = 'none'; return; }
+    let h = '<div class="detected-title">✓ Detected</div>';
+    if (subtotal > 0) h += '<div class="detected-item"><span>Subtotal</span><span>' + fmt(subtotal) + '</span></div>';
+    if (tax > 0) h += '<div class="detected-item"><span>Tax</span><span>' + fmt(tax) + '</span></div>';
+    h += '<div class="detected-item total"><span>Total</span><span>' + fmt(total) + '</span></div>';
+    box.innerHTML = h; box.style.display = 'block';
+}
+
+function clearPreview() {
+    getEl('previewBox').style.display = 'none';
+    getEl('detectedBox').style.display = 'none';
+    getEl('scanZone').style.display = '';
+    getEl('fileInput').value = '';
+    state.currentImg = null;
+}
+
+function rescan() { if (state.currentImg) fetch(state.currentImg).then(r => r.blob()).then(b => processImg(b)); }
+
+// Camera
+let camStream = null;
+async function openCamera() {
+    try {
+        camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        getEl('cameraVideo').srcObject = camStream;
+        getEl('cameraModal').classList.add('show');
+    } catch (e) {
+        toast('Camera not available', 'error');
+    }
+}
+
+function closeCamera() { stopCam(); getEl('cameraModal').classList.remove('show'); }
+function stopCam() { if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; } }
+
+function capture() {
+    const v = getEl('cameraVideo'), c = document.createElement('canvas');
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext('2d').drawImage(v, 0, 0);
+    c.toBlob(b => { closeCamera(); processImg(b); }, 'image/jpeg', 0.9);
+}
+
+// History
+function saveCalc() {
+    if (state.bill <= 0) { toast('Enter bill first', 'error'); return; }
+    let tip = (state.bill + state.tax) * (state.tipPct / 100), total = state.bill + state.tax + tip;
+    if (state.roundMode === 'up') total = Math.ceil(total);
+    if (state.roundMode === 'down') total = Math.floor(total);
+    state.history.unshift({
+        id: Date.now(), date: new Date().toISOString(), bill: state.bill, tax: state.tax,
+        tipPct: state.tipPct, tipAmt: tip, total, people: state.people, currency: state.currency
+    });
+    if (state.history.length > 50) state.history = state.history.slice(0, 50);
+    localStorage.setItem('tipHistory', JSON.stringify(state.history));
+    loadHistory(); updateInsights(); toast('Saved!', 'success'); haptic();
+}
+
+function loadHistory() {
+    const list = getEl('historyList');
+    if (!state.history.length) {
+        list.innerHTML = '<div class="history-empty"><div class="history-empty-icon">🕐</div><h3>No calculations yet</h3><p>Your saved calculations will appear here</p></div>';
+        return;
+    }
+    list.innerHTML = state.history.map(e => {
+        const d = new Date(e.date), s = symbols[e.currency] || '$';
+        return '<div class="history-item"><div><div class="history-date">' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div><div class="history-details">' + e.tipPct + '% tip' + (e.people > 1 ? ' • ' + e.people + ' people' : '') + '</div></div><div class="history-amount">' + s + e.total.toFixed(2) + '</div></div>';
+    }).join('');
+}
+
+function clearHistory() {
+    if (confirm('Clear all history?')) {
+        state.history = [];
+        localStorage.removeItem('tipHistory');
+        loadHistory(); updateInsights(); toast('Cleared', 'success');
+    }
+}
+
+function updateInsights() {
+    if (!state.history.length) {
+        getEl('totalSpent').textContent = '$0';
+        getEl('totalTips').textContent = '$0';
+        getEl('avgTip').textContent = '0%';
+        getEl('calcCount').textContent = '0';
+        return;
+    }
+    const ts = state.history.reduce((s, e) => s + e.total, 0);
+    const tt = state.history.reduce((s, e) => s + e.tipAmt, 0);
+    const at = state.history.reduce((s, e) => s + e.tipPct, 0) / state.history.length;
+    getEl('totalSpent').textContent = '$' + ts.toFixed(0);
+    getEl('totalTips').textContent = '$' + tt.toFixed(0);
+    getEl('avgTip').textContent = at.toFixed(1) + '%';
+    getEl('calcCount').textContent = state.history.length;
+}
+
+// Share
+function openShare() {
+    if (state.bill <= 0) { toast('Calculate first', 'error'); return; }
+    genQR(); getEl('shareModal').classList.add('show');
+}
+
+function genQR() {
+    let tip = (state.bill + state.tax) * (state.tipPct / 100), total = state.bill + state.tax + tip;
+    if (state.roundMode === 'up') total = Math.ceil(total);
+    if (state.roundMode === 'down') total = Math.floor(total);
+    const txt = 'TippyTip\nBill:' + fmt(state.bill) + '\nTax:' + fmt(state.tax) + '\nTip(' + state.tipPct + '%):' + fmt(tip) + '\nTotal:' + fmt(total);
+    const c = getEl('qrCanvas'), url = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(txt);
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => { c.width = 200; c.height = 200; c.getContext('2d').drawImage(img, 0, 0, 200, 200); };
+    img.src = url;
+}
+
+function copyBill() {
+    let tip = (state.bill + state.tax) * (state.tipPct / 100), total = state.bill + state.tax + tip;
+    if (state.roundMode === 'up') total = Math.ceil(total);
+    if (state.roundMode === 'down') total = Math.floor(total);
+    const txt = 'Bill:' + fmt(state.bill) + ' | Tax:' + fmt(state.tax) + ' | Tip:' + fmt(tip) + ' (' + state.tipPct + '%) | Total:' + fmt(total);
+    navigator.clipboard.writeText(txt).then(() => toast('Copied!', 'success')).catch(() => toast('Failed', 'error'));
+}
+
+async function shareBill() {
+    let tip = (state.bill + state.tax) * (state.tipPct / 100), total = state.bill + state.tax + tip;
+    if (state.roundMode === 'up') total = Math.ceil(total);
+    if (state.roundMode === 'down') total = Math.floor(total);
+    const txt = '💵 TippyTip\nBill:' + fmt(state.bill) + '\nTax:' + fmt(state.tax) + '\nTip(' + state.tipPct + '%):' + fmt(tip) + '\nTotal:' + fmt(total);
+    if (navigator.share) {
+        try { await navigator.share({ title: 'TippyTip', text: txt }); toast('Shared!', 'success'); }
+        catch (e) { if (e.name !== 'AbortError') copyBill(); }
+    } else copyBill();
+}
+
+// Settings
+function saveSettings() { localStorage.setItem('defaultTip', getEl('defaultTipInput').value); toast('Saved!', 'success'); }
+
+function clearAll() {
+    getEl('billInput').value = '';
+    getEl('taxInput').value = '0';
+    state.bill = 0; state.tax = 0; state.people = 1; state.roundMode = null;
+    getEl('peopleNum').textContent = '1';
+    getEl('roundUpBtn').classList.remove('active');
+    getEl('roundDownBtn').classList.remove('active');
+    getEl('resultsCard').style.display = 'none';
+    clearPreview(); toast('Cleared', 'success');
+}
+
+// Currency
+async function fetchRates() {
+    try {
+        const r = await fetch('https://api.exchangerate-api.com/v4/latest/USD'), d = await r.json();
+        state.rates = d.rates; updateRates(); convert();
+    } catch (e) {
+        state.rates = { USD: 1, EUR: 0.92, GBP: 0.79, CAD: 1.36, JPY: 149, INR: 83 };
+        updateRates();
+    }
+}
+
+function updateRates() {
+    if (getEl('rateEUR') && state.rates.EUR) getEl('rateEUR').textContent = state.rates.EUR.toFixed(2);
+    if (getEl('rateGBP') && state.rates.GBP) getEl('rateGBP').textContent = state.rates.GBP.toFixed(2);
+    if (getEl('rateJPY') && state.rates.JPY) getEl('rateJPY').textContent = state.rates.JPY.toFixed(0);
+    if (getEl('rateCAD') && state.rates.CAD) getEl('rateCAD').textContent = state.rates.CAD.toFixed(2);
+}
+
+function convert() {
+    const a = parseFloat(getEl('convertAmt')?.value) || 0;
+    const f = getEl('fromCurr')?.value, t = getEl('toCurr')?.value;
+    if (!state.rates[f] || !state.rates[t]) return;
+    const rate = state.rates[t] / state.rates[f], conv = a * rate;
+    const sym = symbols[t] || '', dec = t === 'JPY' ? 0 : 2;
+    if (getEl('convertedAmt')) getEl('convertedAmt').textContent = sym + conv.toFixed(dec);
+    if (getEl('rateDisplay')) getEl('rateDisplay').textContent = '1 ' + f + ' = ' + rate.toFixed(4) + ' ' + t;
+}
+
+function swapCurr() {
+    const f = getEl('fromCurr'), t = getEl('toCurr');
+    if (!f || !t) return;
+    const fv = f.value, tv = t.value;
+    f.value = tv; t.value = fv; convert(); haptic();
+}
+
+// Weather
+async function fetchWeather(lat, lon) {
+    try {
+        const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code&temperature_unit=celsius');
+        const d = await r.json();
+        const temp = Math.round(d.current.temperature_2m), code = d.current.weather_code;
+        const emoji = { 0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 51: '🌧️', 61: '🌧️', 71: '🌨️', 80: '🌦️', 95: '⛈️' };
+        const desc = { 0: 'Clear', 1: 'Mostly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Foggy', 51: 'Drizzle', 61: 'Rain', 71: 'Snow', 80: 'Showers', 95: 'Storm' };
+        if (getEl('weatherIcon')) getEl('weatherIcon').textContent = emoji[code] || '🌡️';
+        if (getEl('weatherTemp')) getEl('weatherTemp').textContent = temp + '°C';
+        if (getEl('weatherDesc')) getEl('weatherDesc').textContent = desc[code] || '';
+    } catch (e) {}
+}
+
+// Quotes
+async function fetchQuote() {
+    try {
+        const r = await fetch('https://api.quotable.io/random?maxLength=100'), d = await r.json();
+        if (getEl('quoteText')) getEl('quoteText').textContent = '"' + d.content + '"';
+        if (getEl('quoteAuthor')) getEl('quoteAuthor').textContent = '— ' + d.author;
+    } catch (e) {
+        const q = [
+            { t: "No one has ever become poor by giving.", a: "Anne Frank" },
+            { t: "Generosity is giving more than you can.", a: "Khalil Gibran" },
+            { t: "We make a living by what we get, but we make a life by what we give.", a: "Winston Churchill" }
+        ];
+        const x = q[Math.floor(Math.random() * q.length)];
+        if (getEl('quoteText')) getEl('quoteText').textContent = '"' + x.t + '"';
+        if (getEl('quoteAuthor')) getEl('quoteAuthor').textContent = '— ' + x.a;
+    }
+    haptic();
+}
+
+// Tipping culture
+const tipCulture = { US: '15-20% expected', CA: '15-18% standard', GB: '10-12% if no service charge', AU: '10% for great service', JP: 'Not customary', IN: '10% appreciated', DE: 'Round up or 5-10%' };
+function updateCulture(cc) {
+    const t = tipCulture[cc] || '10-15% generally appreciated';
+    if (getEl('tipCultureText')) getEl('tipCultureText').textContent = t;
+}
+
+// Location
+async function detectLocation() {
+    try {
+        const r = await fetch('https://ipapi.co/json/'), d = await r.json();
+        if (d.country_name) {
+            if (getEl('locationText')) getEl('locationText').textContent = d.country_name;
+            if (getEl('weatherLoc')) getEl('weatherLoc').textContent = (d.city || '') + ', ' + d.country_name;
+        }
+        if (d.latitude && d.longitude) fetchWeather(d.latitude, d.longitude);
+        if (d.country_code) updateCulture(d.country_code);
+        const cm = { US: 'USD', CA: 'CAD', GB: 'GBP', AU: 'AUD', JP: 'JPY', IN: 'INR', DE: 'EUR', FR: 'EUR' };
+        if (!localStorage.getItem('currency') && cm[d.country_code]) {
+            state.currency = cm[d.country_code];
+            if (getEl('currencySelect')) getEl('currencySelect').value = state.currency;
+            if (getEl('fromCurr')) getEl('fromCurr').value = state.currency;
+            updateSymbol();
+        }
+        const tm = { US: 18, CA: 15, GB: 12, AU: 10, JP: 0 };
+        if (tm[d.country_code] !== undefined) {
+            state.tipPct = tm[d.country_code];
+            if (getEl('tipSlider')) getEl('tipSlider').value = state.tipPct;
+            updateSlider(); updateBtns();
+        }
+    } catch (e) {
+        if (getEl('locationText')) getEl('locationText').textContent = 'Unknown';
+    }
+}
+
+// Utils
+function toast(msg, type = 'info') {
+    const c = getEl('toastContainer'), icons = { success: '✓', error: '✕', info: 'i' };
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.innerHTML = '<span>' + icons[type] + '</span><span>' + msg + '</span>';
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
+
+// Service Worker
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+</script>
+</body>
+</html>

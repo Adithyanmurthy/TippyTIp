@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <h1>Icon Generator</h1>
+    <p>Open this file in a browser and use browser dev tools to export icons.</p>
+    <canvas id="canvas" width="512" height="512"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Create gradient
+        const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+        gradient.addColorStop(0, '#667eea');
+        gradient.addColorStop(1, '#764ba2');
+        
+        // Draw background
+        ctx.fillStyle = gradient;
+        ctx.roundRect(0, 0, 512, 512, 100);
+        ctx.fill();
+        
+        // Draw dollar sign
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 200px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('$', 256, 320);
+        
+        // Draw percentage circle
+        ctx.beginPath();
+        ctx.arc(256, 180, 60, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fill();
+        
+        ctx.fillStyle = '#667eea';
+        ctx.font = 'bold 80px Arial';
+        ctx.fillText('%', 256, 200);
+    </script>
+</body>
+</html>

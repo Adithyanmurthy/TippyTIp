@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate App Icons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; }
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 5px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Icon Generator for Tip Calculator</h1>
+        <p>Click "Generate All Icons" to create all required icon sizes. Then right-click each canvas and "Save Image As..." to save.</p>
+        
+        <div id="icons"></div>
+        
+        <div style="margin-top: 30px;">
+            <button onclick="generateAll()">Generate All Icons</button>
+            <button onclick="downloadAll()">Download All as ZIP (requires manual save)</button>
+        </div>
+        
+        <h2 style="margin-top: 40px;">Instructions:</h2>
+        <ol>
+            <li>Click "Generate All Icons"</li>
+            <li>Right-click each icon canvas</li>
+            <li>Select "Save Image As..."</li>
+            <li>Save with the filename shown (e.g., icon-192x192.png)</li>
+            <li>Place all icons in the <code>/icons</code> folder</li>
+        </ol>
+    </div>
+
+    <script>
+        const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
+        
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Draw rounded rectangle background
+            const radius = size * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Draw dollar sign
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('$', size / 2, size * 0.625);
+            
+            // Draw percentage circle
+            ctx.beginPath();
+            ctx.arc(size / 2, size * 0.35, size * 0.12, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fill();
+            
+            ctx.fillStyle = '#667eea';
+            ctx.font = `bold ${size * 0.16}px Arial`;
+            ctx.fillText('%', size / 2, size * 0.39);
+        }
+        
+        function generateAll() {
+            const container = document.getElementById('icons');
+            container.innerHTML = '';
+            
+            sizes.forEach(size => {
+                const div = document.createElement('div');
+                div.className = 'icon-preview';
+                
+                const canvas = document.createElement('canvas');
+                canvas.id = `icon-${size}`;
+                drawIcon(canvas, size);
+                
+                const label = document.createElement('div');
+                label.textContent = `${size}x${size}`;
+                label.style.marginTop = '5px';
+                label.style.fontSize = '12px';
+                label.style.color = '#666';
+                
+                div.appendChild(canvas);
+                div.appendChild(label);
+                container.appendChild(div);
+            });
+        }
+        
+        function downloadAll() {
+            alert('Please right-click each icon and save manually. Browser security prevents automatic downloads of multiple files.');
+        }
+        
+        // Auto-generate on load
+        window.onload = generateAll;
+    </script>
+</body>
+</html>
