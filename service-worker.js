@@ -41,7 +41,7 @@ self.addEventListener('fetch', event => {
 
   // API calls - network first with cache fallback
   if (url.hostname.includes('api.') || 
-      url.hostname === 'ipapi.co' ||
+      url.hostname === 'ipwho.is' ||
       url.hostname.includes('cdn.jsdelivr.net')) {
     event.respondWith(networkFirst(request));
     return;

@@ -959,10 +959,10 @@ function updateCulture(cc) {
 // Location
 async function detectLocation() {
     try {
-        const r = await fetch('https://ipapi.co/json/'), d = await r.json();
-        if (d.country_name) {
-            if (getEl('locationText')) getEl('locationText').textContent = d.country_name;
-            if (getEl('weatherLoc')) getEl('weatherLoc').textContent = (d.city || '') + ', ' + d.country_name;
+        const r = await fetch('https://ipwho.is/'), d = await r.json();
+        if (d.country) {
+            if (getEl('locationText')) getEl('locationText').textContent = d.country;
+            if (getEl('weatherLoc')) getEl('weatherLoc').textContent = (d.city || '') + ', ' + d.country;
         }
         if (d.latitude && d.longitude) fetchWeather(d.latitude, d.longitude);
         if (d.country_code) updateCulture(d.country_code);
